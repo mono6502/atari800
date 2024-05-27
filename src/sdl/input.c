@@ -804,9 +804,6 @@ int PLATFORM_Keyboard(void)
 	if (lastkey == KBD_MON) {
 		UI_alt_function = UI_MENU_MONITOR;
 	}
-	if (lastkey == KBD_HELP) {
-		return AKEY_HELP ^ shiftctrl;
-	}
 	if (lastkey == KBD_BREAK) {
 		if (BINLOAD_wait_active) {
 			BINLOAD_pause_loading = TRUE;
@@ -889,6 +886,10 @@ int PLATFORM_Keyboard(void)
 
 	if (key_control)
 		shiftctrl ^= AKEY_CTRL;
+
+	if (lastkey == KBD_HELP) {
+		return AKEY_HELP ^ shiftctrl;
+	}
 
 	switch (lastkey) {
 	case SDLK_BACKQUOTE: /* fallthrough */
