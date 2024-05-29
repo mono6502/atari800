@@ -459,7 +459,9 @@ int PLATFORM_Keyboard(void)
 				|| (event.key.keysym.sym == KBD_SELECT)
 				|| (event.key.keysym.sym == KBD_START)
 				|| (event.key.keysym.sym == SDLK_LSHIFT)
-				|| (event.key.keysym.sym == SDLK_RSHIFT))
+				|| (event.key.keysym.sym == SDLK_RSHIFT)
+				|| (event.key.keysym.sym == SDLK_LCTRL)
+				|| (event.key.keysym.sym == SDLK_RCTRL))
 				break;
 
 			lastkey = event.key.keysym.sym;
@@ -474,7 +476,9 @@ int PLATFORM_Keyboard(void)
 				|| (event.key.keysym.sym == KBD_SELECT)
 				|| (event.key.keysym.sym == KBD_START)
 				|| (event.key.keysym.sym == SDLK_LSHIFT)
-				|| (event.key.keysym.sym == SDLK_RSHIFT))
+				|| (event.key.keysym.sym == SDLK_RSHIFT)
+				|| (event.key.keysym.sym == SDLK_LCTRL)
+				|| (event.key.keysym.sym == SDLK_RCTRL))
 				break;
 
 			lastkey = event.key.keysym.sym;
