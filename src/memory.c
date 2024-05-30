@@ -188,10 +188,23 @@ static void AllocMapRAM(void)
 
 int MEMORY_SizeValid(int size)
 {
-	return size == 8 || size == 16 || size == 24 || size == 32
-	       || size == 40 || size == 48 || size == 52 || size == 64
-	       || size == 128 || size == 192 || size == MEMORY_RAM_320_RAMBO
-	       || size == MEMORY_RAM_320_COMPY_SHOP || size == 576 || size == 1088;
+	return size == 8 
+		|| size == 16 
+		|| size == 24 
+		|| size == 32
+		|| size == 40 
+		|| size == 48 
+		|| size == 52 
+		|| size == 64
+		|| size == 128 
+		|| size == 192 
+		|| size == 256 
+		|| size == MEMORY_RAM_320_RAMBO 
+		|| size == MEMORY_RAM_320_COMPY_SHOP 
+		|| size == MEMORY_RAM_576_RAMBO_TFHH
+		|| size == MEMORY_RAM_576_RAMBO 
+		|| size == MEMORY_RAM_576_COMPY_SHOP 
+		|| size == 1088;
 }
 
 void MEMORY_InitialiseMachine(void)
@@ -413,8 +426,13 @@ void MEMORY_StateSave(UBYTE SaveVerbose)
 		temp = 0;
 	StateSav_SaveINT(&temp, 1);
 	if (MEMORY_ram_size == MEMORY_RAM_320_RAMBO || MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP) {
-		/* Save specific banking type. */
+		/* Save specific banking type for 320K. */
 		temp = MEMORY_ram_size - 320;
+		StateSav_SaveINT(&temp, 1);
+	}
+	else if (MEMORY_ram_size == MEMORY_RAM_576_RAMBO || MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP || MEMORY_ram_size == MEMORY_RAM_576_RAMBO_TFHH) {
+		/* Save specific banking type for 576K. */
+		temp = MEMORY_ram_size - 576;
 		StateSav_SaveINT(&temp, 1);
 	}
 	byte = PIA_PORTB | PIA_PORTB_mask;
@@ -593,8 +611,8 @@ void MEMORY_StateRead(UBYTE SaveVerbose, UBYTE StateVersion)
 		StateSav_ReadINT(&num_xe_banks, 1);
 		/* Compute value of MEMORY_ram_size. */
 		MEMORY_ram_size = base_ram_kb + num_xe_banks * 16;
-		if (MEMORY_ram_size == 320) {
-			/* There are 2 different memory mappings for 320 KB. */
+		if ((MEMORY_ram_size == 320) || (MEMORY_ram_size == 576)) {
+			/* There are 2 different memory mappings for 320 KB and 3 ones for 576 KB. */
 			/* In savestate version <= 6 this variable is read in PIA_StateRead. */
 			int xe_type;
 			StateSav_ReadINT(&xe_type, 1);
@@ -616,14 +634,24 @@ void MEMORY_StateRead(UBYTE SaveVerbose, UBYTE StateVersion)
 			case 192:
 				MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0x40) >> 2)) >> 2) + 1;
 				break;
+			case 256:
+				if ((portb & 0x60) != 0x00)
+					MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0x60) >> 1)) >> 2) + 1;
+				break;
 			case MEMORY_RAM_320_RAMBO:
 				MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0x60) >> 1)) >> 2) + 1;
 				break;
 			case MEMORY_RAM_320_COMPY_SHOP:
 				MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0xc0) >> 2)) >> 2) + 1;
 				break;
-			case 576:
+			case MEMORY_RAM_576_RAMBO_TFHH:
+				MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0xe0) >> 1)) >> 2) + 1;
+				break;
+			case MEMORY_RAM_576_RAMBO:
 				MEMORY_xe_bank = (((portb & 0x0e) + ((portb & 0x60) >> 1)) >> 1) + 1;
+				break;
+			case MEMORY_RAM_576_COMPY_SHOP:
+				MEMORY_xe_bank = (((portb & 0x0e) + ((portb & 0xc0) >> 2)) >> 1) + 1;
 				break;
 			case 1088:
 				MEMORY_xe_bank = (((portb & 0x0e) + ((portb & 0xe0) >> 1)) >> 1) + 1;
@@ -632,7 +660,7 @@ void MEMORY_StateRead(UBYTE SaveVerbose, UBYTE StateVersion)
 		}
 		/* In savestate version <= 6 this variable is read in PIA_StateRead. */
 		MEMORY_selftest_enabled = (portb & 0x81) == 0x01
-		                          && !((portb & 0x30) != 0x30 && MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP)
+		                          && !((portb & 0x30) != 0x30 && (MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP || MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP))
 		                          && !((portb & 0x10) == 0 && MEMORY_ram_size == 1088);
 
 		StateSav_ReadINT(&MEMORY_cartA0BF_enabled, 1);
@@ -654,7 +682,11 @@ void MEMORY_StateRead(UBYTE SaveVerbose, UBYTE StateVersion)
 			for (i = 0; i < 192 * 4; i++)
 				StateSav_ReadUBYTE(&buffer[0], 256);
 		}
-		if (StateVersion >= 7 && (MEMORY_ram_size == 128 || MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP)) {
+		if (StateVersion >= 7 && (
+				MEMORY_ram_size == 128 
+				|| MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP 
+				|| MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP
+			)) {
 			switch (portb & 0x30) {
 			case 0x20:	/* ANTIC: base, CPU: extended */
 				ANTIC_xe_ptr = atarixe_memory;
@@ -714,7 +746,10 @@ static UBYTE const * builtin_cart(UBYTE portb)
 	   selecting extended memory bank number. */
 	if (Atari800_builtin_basic
 	    && (portb & 0x02) == 0
-	    && ((portb & 0x10) != 0 || (MEMORY_ram_size != 576 && MEMORY_ram_size != 1088)))
+	    && ((portb & 0x10) != 0 || (
+			MEMORY_ram_size != MEMORY_RAM_576_RAMBO
+			&& MEMORY_ram_size != MEMORY_RAM_576_COMPY_SHOP 
+			&& MEMORY_ram_size != 1088)))
 		return MEMORY_basic;
 	/* The builtin XEGS game is disabled when BASIC is enabled. It is enabled
 	   by setting bit 6 of PORTB, but it's disabled when using 320K and larger
@@ -722,7 +757,7 @@ static UBYTE const * builtin_cart(UBYTE portb)
 	   bank number. */
 	if (Atari800_builtin_game
 	    && (portb & 0x40) == 0
-	    && ((portb & 0x10) != 0 || MEMORY_ram_size < 320))
+	    && ((portb & 0x10) != 0 || MEMORY_ram_size < 192))
 		return MEMORY_xegame;
 	return NULL;
 }
@@ -761,14 +796,24 @@ void MEMORY_HandlePORTB(UBYTE byte, UBYTE oldval)
 			case 192:
 				bank = (((byte & 0x0c) + ((byte & 0x40) >> 2)) >> 2) + 1;
 				break;
+			case 256:
+				if ((byte & 0x60) != 0x00)
+					bank = (((byte & 0x0c) + ((byte & 0x60) >> 1)) >> 2) + 1;
+				break;
 			case MEMORY_RAM_320_RAMBO:
 				bank = (((byte & 0x0c) + ((byte & 0x60) >> 1)) >> 2) + 1;
 				break;
 			case MEMORY_RAM_320_COMPY_SHOP:
 				bank = (((byte & 0x0c) + ((byte & 0xc0) >> 2)) >> 2) + 1;
 				break;
-			case 576:
+			case MEMORY_RAM_576_RAMBO_TFHH:
+				bank = (((byte & 0x0c) + ((byte & 0xe0) >> 1)) >> 2) + 1;
+				break;
+			case MEMORY_RAM_576_RAMBO:
 				bank = (((byte & 0x0e) + ((byte & 0x60) >> 1)) >> 1) + 1;
+				break;
+			case MEMORY_RAM_576_COMPY_SHOP:
+				bank = (((byte & 0x0e) + ((byte & 0xc0) >> 2)) >> 1) + 1;
 				break;
 			case 1088:
 				bank = (((byte & 0x0e) + ((byte & 0xe0) >> 1)) >> 1) + 1;
@@ -783,7 +828,7 @@ void MEMORY_HandlePORTB(UBYTE byte, UBYTE oldval)
 		if (MEMORY_selftest_enabled
 		    && (cpu_bank != new_cpu_bank
 		        || antic_bank != new_antic_bank
-		        || (MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP && (byte & 0x20) == 0))) {
+		        || (((byte & 0x20) == 0) && (MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP || MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP)) )) {
 			/* Disable Self Test ROM */
 			memcpy(MEMORY_mem + 0x5000, under_atarixl_os + 0x1000, 0x800);
 			if (ANTIC_xe_ptr != NULL)
@@ -797,7 +842,7 @@ void MEMORY_HandlePORTB(UBYTE byte, UBYTE oldval)
 			memcpy(MEMORY_mem + 0x4000, atarixe_memory + (new_cpu_bank << 14), 0x4000);
 		}
 
-		if (MEMORY_ram_size == 128 || MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP)
+		if (MEMORY_ram_size == 128 || MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP || MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP)
 			ANTIC_xe_ptr = new_antic_bank == new_cpu_bank ? NULL : atarixe_memory + (new_antic_bank << 14);
 
 		MEMORY_xe_bank = bank;
@@ -888,7 +933,7 @@ void MEMORY_HandlePORTB(UBYTE byte, UBYTE oldval)
 		/* and we're not accessing extended 320K Compy Shop or 1088K memory */
 		/* Note: in Compy Shop bit 5 (ANTIC access) disables Self Test */
 		if (!MEMORY_selftest_enabled && (byte & 0x01)
-		&& !((byte & 0x30) != 0x30 && MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP)
+		&& !((byte & 0x30) != 0x30 && (MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP || MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP))
 		&& !((byte & 0x10) == 0 && MEMORY_ram_size == 1088)) {
 			/* Enable Self Test ROM */
 			if (MEMORY_ram_size > 20) {
