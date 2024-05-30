@@ -44,6 +44,9 @@ extern UBYTE MEMORY_mem[65536 + 2];
    The only valid value for Atari800_MACHINE_5200 is 16. */
 #define MEMORY_RAM_320_RAMBO       320
 #define MEMORY_RAM_320_COMPY_SHOP  321
+#define MEMORY_RAM_576_RAMBO       576
+#define MEMORY_RAM_576_COMPY_SHOP  577
+#define MEMORY_RAM_576_RAMBO_TFHH  578
 extern int MEMORY_ram_size;
 
 #define MEMORY_RAM       0
