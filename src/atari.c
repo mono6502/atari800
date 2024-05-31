@@ -502,6 +502,26 @@ int Atari800_Initialise(int *argc, char *argv[])
 			Atari800_builtin_game = FALSE;
 			Atari800_keyboard_detached = FALSE;
 		}
+		else if (strcmp(argv[i], "-192") == 0) {
+			Atari800_machine_type = Atari800_MACHINE_XLXE;
+			MEMORY_ram_size = 192;
+			Atari800_builtin_basic = TRUE;
+			Atari800_keyboard_leds = FALSE;
+			Atari800_f_keys = FALSE;
+			Atari800_jumper = FALSE;
+			Atari800_builtin_game = FALSE;
+			Atari800_keyboard_detached = FALSE;
+		}
+		else if (strcmp(argv[i], "-256") == 0) {
+			Atari800_machine_type = Atari800_MACHINE_XLXE;
+			MEMORY_ram_size = 256;
+			Atari800_builtin_basic = TRUE;
+			Atari800_keyboard_leds = FALSE;
+			Atari800_f_keys = FALSE;
+			Atari800_jumper = FALSE;
+			Atari800_builtin_game = FALSE;
+			Atari800_keyboard_detached = FALSE;
+		}
 		else if (strcmp(argv[i], "-320xe") == 0) {
 			Atari800_machine_type = Atari800_MACHINE_XLXE;
 			MEMORY_ram_size = MEMORY_RAM_320_COMPY_SHOP;
@@ -512,7 +532,7 @@ int Atari800_Initialise(int *argc, char *argv[])
 			Atari800_builtin_game = FALSE;
 			Atari800_keyboard_detached = FALSE;
 		}
-		else if (strcmp(argv[i], "-rambo") == 0) {
+		else if (strcmp(argv[i], "-320") == 0 || strcmp(argv[i], "-rambo") == 0) {
 			Atari800_machine_type = Atari800_MACHINE_XLXE;
 			MEMORY_ram_size = MEMORY_RAM_320_RAMBO;
 			Atari800_builtin_basic = TRUE;
@@ -524,7 +544,27 @@ int Atari800_Initialise(int *argc, char *argv[])
 		}
 		else if (strcmp(argv[i], "-576xe") == 0) {
 			Atari800_machine_type = Atari800_MACHINE_XLXE;
-			MEMORY_ram_size = 576;
+			MEMORY_ram_size = MEMORY_RAM_576_COMPY_SHOP;
+			Atari800_builtin_basic = TRUE;
+			Atari800_keyboard_leds = FALSE;
+			Atari800_f_keys = FALSE;
+			Atari800_jumper = FALSE;
+			Atari800_builtin_game = FALSE;
+			Atari800_keyboard_detached = FALSE;
+		}
+		else if (strcmp(argv[i], "-576") == 0) {
+			Atari800_machine_type = Atari800_MACHINE_XLXE;
+			MEMORY_ram_size = MEMORY_RAM_576_RAMBO;
+			Atari800_builtin_basic = TRUE;
+			Atari800_keyboard_leds = FALSE;
+			Atari800_f_keys = FALSE;
+			Atari800_jumper = FALSE;
+			Atari800_builtin_game = FALSE;
+			Atari800_keyboard_detached = FALSE;
+		}
+		else if (strcmp(argv[i], "-576tfhh") == 0) {
+			Atari800_machine_type = Atari800_MACHINE_XLXE;
+			MEMORY_ram_size = MEMORY_RAM_576_RAMBO_TFHH;
 			Atari800_builtin_basic = TRUE;
 			Atari800_keyboard_leds = FALSE;
 			Atari800_f_keys = FALSE;
@@ -695,9 +735,13 @@ int Atari800_Initialise(int *argc, char *argv[])
 					Log_print("\t-1200            Emulate Atari 1200XL");
 					Log_print("\t-xl              Emulate Atari 800XL");
 					Log_print("\t-xe              Emulate Atari 130XE");
+					Log_print("\t-192             Emulate Atari 192XE (Karen)");
+					Log_print("\t-256             Emulate Atari 256XE (Rambo XL)");
 					Log_print("\t-320xe           Emulate Atari 320XE (Compy-Shop)");
-					Log_print("\t-rambo           Emulate Atari 320XE (Rambo XL)");
-					Log_print("\t-576xe           Emulate Atari 576XE");
+					Log_print("\t-320|-rambo      Emulate Atari 320XE (Rambo XL)");
+					Log_print("\t-576xe           Emulate Atari 576XE (Compy-Shop)");
+					Log_print("\t-576             Emulate Atari 576XE (Rambo XL)");
+					Log_print("\t-576tfhh         Emulate Atari 576XE (TFHH)");
 					Log_print("\t-1088xe          Emulate Atari 1088XE");
 					Log_print("\t-xegs            Emulate Atari XEGS");
 					Log_print("\t-5200            Emulate Atari 5200 Games System");
