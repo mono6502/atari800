@@ -701,7 +701,8 @@ void MEMORY_StateRead(UBYTE SaveVerbose, UBYTE StateVersion)
 				StateSav_ReadUBYTE(&buffer[0], 256);
 		}
 		if (StateVersion >= 7 && (
-				MEMORY_ram_size == 128 
+				MEMORY_ram_size == 128
+				|| MEMORY_ram_size == 192
 				|| MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP 
 				|| MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP
 			)) {
@@ -868,7 +869,10 @@ void MEMORY_HandlePORTB(UBYTE byte, UBYTE oldval)
 			memcpy(MEMORY_mem + 0x4000, atarixe_memory + (new_cpu_bank << 14), 0x4000);
 		}
 
-		if (MEMORY_ram_size == 128 || MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP || MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP)
+		if ( MEMORY_ram_size == 128 
+			|| MEMORY_ram_size == 192 
+			|| MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP 
+			|| MEMORY_ram_size == MEMORY_RAM_576_COMPY_SHOP )
 			ANTIC_xe_ptr = new_antic_bank == new_cpu_bank ? NULL : atarixe_memory + (new_antic_bank << 14);
 
 		MEMORY_xe_bank = bank;
