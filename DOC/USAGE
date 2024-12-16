@@ -123,10 +123,11 @@ Command line options
 -xl                   Emulate Atari 800XL
 -xe                   Emulate Atari 130XE
 -192                  Emulate Atari 192XT (Karen)
--256                  Emulate Atari 256XE (Rambo)
--320|-rambo           Emulate Atari 320XE (Rambo)
+-256                  Emulate Atari 256XE (Rambo XL)
+-256toms              Emulate Atari 256XE (TOMS)
+-320|-rambo           Emulate Atari 320XE (Rambo XL)
 -320xe                Emulate Atari 320XE (Compy Shop)
--576                  Emulate Atari 576XE (Rambo)
+-576                  Emulate Atari 576XE (Rambo XL)
 -576xe                Emulate Atari 576XE (Compy Shop)
 -576tfhh              Emulate Atari 576XE (TFHH)
 -1088xe               Emulate Atari 1088XE

@@ -213,14 +213,30 @@ Emulate Atari 800XL
 .B \-xe
 Emulate Atari 130XE
 .TP
-.B \-320xe
-Emulate Atari 320XE (Compy-Shop)
+.B \-192
+Emulate Atari 192XT (Karen)
 .TP
+.B \-256
+Emulate Atari 256XE (Rambo XL)
+.TP
+.B \-256toms
+Emulate Atari 256XE (TOMS)
+.TP
+.B \-320
 .B \-rambo
-Emulate Atari 320XE (Rambo)
+Emulate Atari 320XE (Rambo XL)
+.TP
+.B \-320xe
+Emulate Atari 320XE (Compy Shop)
+.TP
+.B \-576
+Emulate Atari 576XE (Rambo XL)
 .TP
 .B \-576xe
-Emulate Atari 576XE
+Emulate Atari 576XE (Compy Shop)
+.TP
+.B \-576tfhh
+Emulate Atari 576XE (TFHH)
 .TP
 .B \-1088xe
 Emulate Atari 1088XE

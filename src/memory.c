@@ -198,7 +198,8 @@ int MEMORY_SizeValid(int size)
 		|| size == 64
 		|| size == 128 
 		|| size == 192 
-		|| size == 256 
+		|| size == MEMORY_RAM_256_RAMBO
+		|| size == MEMORY_RAM_256_RAMBO_TOMS
 		|| size == MEMORY_RAM_320_RAMBO 
 		|| size == MEMORY_RAM_320_COMPY_SHOP 
 		|| size == MEMORY_RAM_576_RAMBO_TFHH
@@ -425,7 +426,12 @@ void MEMORY_StateSave(UBYTE SaveVerbose)
 	if (temp < 0)
 		temp = 0;
 	StateSav_SaveINT(&temp, 1);
-	if (MEMORY_ram_size == MEMORY_RAM_320_RAMBO || MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP) {
+	if (MEMORY_ram_size == MEMORY_RAM_256_RAMBO || MEMORY_ram_size == MEMORY_RAM_256_RAMBO_TOMS) {
+		/* Save specific banking type for 256K. */
+		temp = MEMORY_ram_size - 256;
+		StateSav_SaveINT(&temp, 1);
+	}
+	else if (MEMORY_ram_size == MEMORY_RAM_320_RAMBO || MEMORY_ram_size == MEMORY_RAM_320_COMPY_SHOP) {
 		/* Save specific banking type for 320K. */
 		temp = MEMORY_ram_size - 320;
 		StateSav_SaveINT(&temp, 1);
@@ -611,8 +617,12 @@ void MEMORY_StateRead(UBYTE SaveVerbose, UBYTE StateVersion)
 		StateSav_ReadINT(&num_xe_banks, 1);
 		/* Compute value of MEMORY_ram_size. */
 		MEMORY_ram_size = base_ram_kb + num_xe_banks * 16;
-		if ((MEMORY_ram_size == 320) || (MEMORY_ram_size == 576)) {
-			/* There are 2 different memory mappings for 320 KB and 3 ones for 576 KB. */
+		if ((MEMORY_ram_size == 256) || (MEMORY_ram_size == 320) || (MEMORY_ram_size == 576)) {
+			/* There are:
+			 * 2 different memory mappings for 256 KB
+			 * 2 different memory mappings for 320 KB
+			 * and 3 ones for 576 KB.
+			 */
 			/* In savestate version <= 6 this variable is read in PIA_StateRead. */
 			int xe_type;
 			StateSav_ReadINT(&xe_type, 1);
@@ -634,9 +644,17 @@ void MEMORY_StateRead(UBYTE SaveVerbose, UBYTE StateVersion)
 			case 192:
 				MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0x40) >> 2)) >> 2) + 1;
 				break;
-			case 256:
-				if ((portb & 0x60) != 0x00)
-					MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0x60) >> 1)) >> 2) + 1;
+			case MEMORY_RAM_256_RAMBO:
+				if ((portb & 0x60) == 0x00)
+					;										/* $8x - base memory banks $0000-$3FFF, $4000-$7FFF, $8000-$BFFF, $C000-$FFFF */
+				else
+					MEMORY_xe_bank = (((portb & 0x0c) + (((portb & 0x60) - 0x20) >> 1)) >> 2) + 1;	/* $Ax, $Cx, $Ex */
+				break;
+			case MEMORY_RAM_256_RAMBO_TOMS:
+				if ((portb & 0x60) != 0x60)
+					MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0x60) >> 1)) >> 2) + 1;		/* $8x, $Ax, $Cx */
+				else
+					MEMORY_xe_bank = (((portb & 0x0c) + (0x40 >> 1)) >> 2) + 1;			/* $Cx repeated */
 				break;
 			case MEMORY_RAM_320_RAMBO:
 				MEMORY_xe_bank = (((portb & 0x0c) + ((portb & 0x60) >> 1)) >> 2) + 1;
@@ -747,9 +765,9 @@ static UBYTE const * builtin_cart(UBYTE portb)
 	if (Atari800_builtin_basic
 	    && (portb & 0x02) == 0
 	    && ((portb & 0x10) != 0 || (
-			MEMORY_ram_size != MEMORY_RAM_576_RAMBO
-			&& MEMORY_ram_size != MEMORY_RAM_576_COMPY_SHOP 
-			&& MEMORY_ram_size != 1088)))
+			(MEMORY_ram_size != MEMORY_RAM_576_RAMBO)
+			&& (MEMORY_ram_size != MEMORY_RAM_576_COMPY_SHOP)
+			&& (MEMORY_ram_size != 1088) )))
 		return MEMORY_basic;
 	/* The builtin XEGS game is disabled when BASIC is enabled. It is enabled
 	   by setting bit 6 of PORTB, but it's disabled when using 320K and larger
@@ -796,9 +814,17 @@ void MEMORY_HandlePORTB(UBYTE byte, UBYTE oldval)
 			case 192:
 				bank = (((byte & 0x0c) + ((byte & 0x40) >> 2)) >> 2) + 1;
 				break;
-			case 256:
-				if ((byte & 0x60) != 0x00)
-					bank = (((byte & 0x0c) + ((byte & 0x60) >> 1)) >> 2) + 1;
+			case MEMORY_RAM_256_RAMBO:
+				if ((byte & 0x60) == 0x00)
+					;									/* $8x base memory bank */
+				else
+					bank = (((byte & 0x0c) + (((byte & 0x60) - 0x20) >> 1)) >> 2) + 1;	/* $Ax, $Cx, $Ex */
+				break;
+			case MEMORY_RAM_256_RAMBO_TOMS:
+				if ((byte & 0x60) != 0x60)
+					bank = (((byte & 0x0c) + ((byte & 0x60) >> 1)) >> 2) + 1;		/* $8x, $Ax, $Cx */
+				else
+					bank = (((byte & 0x0c) + (0x40 >> 1)) >> 2) + 1;			/* $Cx repeated */
 				break;
 			case MEMORY_RAM_320_RAMBO:
 				bank = (((byte & 0x0c) + ((byte & 0x60) >> 1)) >> 2) + 1;
