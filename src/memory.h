@@ -39,16 +39,24 @@ extern UBYTE MEMORY_mem[65536 + 2];
 
 /* RAM size in kilobytes.
    Valid values for Atari800_MACHINE_800 are: 16, 48, 52.
-   Valid values for Atari800_MACHINE_XLXE are: 16, 64, 128, 192, RAM_320_RAMBO,
-   RAM_320_COMPY_SHOP, 576, 1088.
+   Valid values for Atari800_MACHINE_XLXE are: 16, 64, 128 and
+   RAM_192_RAMBO, RAM_192_KAREN, 
+   RAM_256_RAMBO, RAM_256_RAMBO_TOMS, 
+   RAM_320_RAMBO, RAM_320_COMPY_SHOP, 
+   RAM_576_RAMBO, RAM_576_COMPY_SHOP, RAM_576_RAMBO_TFHH, 
+   1088.
    The only valid value for Atari800_MACHINE_5200 is 16. */
-#define MEMORY_RAM_256_RAMBO       256
-#define MEMORY_RAM_256_RAMBO_TOMS  257
+#define MEMORY_RAM_192_RAMBO       192
+#define MEMORY_RAM_192_KAREN       193
+#define MEMORY_RAM_256_NEWELL      256
+#define MEMORY_RAM_256_TOMS        257
 #define MEMORY_RAM_320_RAMBO       320
 #define MEMORY_RAM_320_COMPY_SHOP  321
 #define MEMORY_RAM_576_RAMBO       576
 #define MEMORY_RAM_576_COMPY_SHOP  577
-#define MEMORY_RAM_576_RAMBO_TFHH  578
+#define MEMORY_RAM_576_TFHH        578
+#define MEMORY_RAM_1088_RAMBO      1088
+#define MEMORY_RAM_1088_NEWELL     1089
 extern int MEMORY_ram_size;
 
 #define MEMORY_RAM       0
